@@ -8,7 +8,6 @@ build/
 
 # QtAria
 extension/key.pem
-extension/icon.png
 
 # Config
 config.json
