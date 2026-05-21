@@ -1,4 +1,3 @@
-import os
 import sys
 import traceback
 from PyQt5.QtCore import QTimer
@@ -29,17 +28,13 @@ def main():
     httpd.start()
     log(f"HTTP server on :{conf['http_port']}")
 
-    first_run = not os.path.exists(cfg.CONFIG_FILE)
-    if first_run:
-        dialog = StartupDialog(conf["connections"], conf["download_dir"])
-        if dialog.exec() != StartupDialog.Accepted:
-            return
-        conf["connections"] = dialog.value()
-        conf["download_dir"] = dialog.download_dir()
-        cfg.save(conf)
-        log(f"first run: connections={conf['connections']}, dir={conf['download_dir']}")
-    else:
-        log(f"using saved config: connections={conf['connections']}, dir={conf['download_dir']}")
+    dialog = StartupDialog(conf["connections"], conf["download_dir"])
+    if dialog.exec() != StartupDialog.Accepted:
+        return
+    conf["connections"] = dialog.value()
+    conf["download_dir"] = dialog.download_dir()
+    cfg.save(conf)
+    log(f"connections={conf['connections']}, dir={conf['download_dir']}")
 
     aria2 = Aria2c(port=conf["rpc_port"], secret=conf["rpc_secret"])
     result = aria2.start_daemon(

@@ -3,7 +3,7 @@ import os
 
 CONFIG_DIR = os.path.expanduser("~/.config/qtaria")
 CONFIG_FILE = os.path.join(CONFIG_DIR, "config.json")
-ARIA2_DIR = os.path.expanduser("~/Downloads/QtAria")
+ARIA2_DIR = os.path.expanduser("~/Downloads")
 
 DEFAULT_CONFIG = {
     "connections": 4,
