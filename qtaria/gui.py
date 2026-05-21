@@ -180,7 +180,8 @@ class DownloadWindow(QWidget):
         self._on_add_url = None
 
         self.setWindowTitle(f"QtAria — {self._filename}")
-        self.setMinimumSize(420, 180)
+        self.setWindowFlags(self.windowFlags() & ~Qt.WindowMaximizeButtonHint)
+        self.setFixedSize(420, 180)
         self._setup_ui()
         self._update_info("Starting...", 0)
 
