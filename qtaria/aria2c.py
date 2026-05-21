@@ -1,5 +1,6 @@
 import json
 import os
+import socket
 import subprocess
 import time
 import urllib.error
@@ -39,6 +40,12 @@ class Aria2c:
                 return result.get("result")
         except (urllib.error.URLError, ConnectionRefusedError):
             return None
+        except socket.timeout:
+            return {"_error": "aria2c timed out"}
+        except (json.JSONDecodeError, ValueError):
+            return {"_error": "invalid response from aria2c"}
+        except OSError as e:
+            return {"_error": f"system error: {e}"}
 
     def add_uri(self, uri, options=None):
         opts = options or {}
@@ -78,9 +85,14 @@ class Aria2c:
             "--console-log-level=error",
             "--summary-interval=0",
         ]
-        self.proc = subprocess.Popen(
-            cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-        )
+        try:
+            self.proc = subprocess.Popen(
+                cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            )
+        except FileNotFoundError:
+            return "aria2c_not_found"
+        except OSError as e:
+            return f"spawn_error: {e}"
         for _ in range(20):
             if self._call("aria2.getGlobalStat") is not None:
                 return True

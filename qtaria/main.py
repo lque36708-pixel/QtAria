@@ -28,30 +28,40 @@ def main():
     httpd.start()
     log(f"HTTP server on :{conf['http_port']}")
 
-    dialog = StartupDialog(conf["connections"])
+    dialog = StartupDialog(conf["connections"], conf["download_dir"])
     if dialog.exec() != StartupDialog.Accepted:
         return
 
     connections = dialog.value()
     conf["connections"] = connections
+    conf["download_dir"] = dialog.download_dir()
     cfg.save(conf)
-    log(f"connections={connections}")
+    log(f"connections={connections}, dir={conf['download_dir']}")
 
     aria2 = Aria2c(port=conf["rpc_port"], secret=conf["rpc_secret"])
-    ok = aria2.start_daemon(
+    result = aria2.start_daemon(
         connections=connections, download_dir=conf["download_dir"]
     )
-    if not ok:
-        log("aria2c not responding")
-        QMessageBox.warning(
+    if result is True:
+        log("aria2c ready")
+    elif result == "aria2c_not_found":
+        log("aria2c not found")
+        QMessageBox.critical(
             None, "QtAria",
-            "aria2c did not start or is not responding.\n"
-            "Make sure aria2 is installed:\n"
+            "aria2c not found!\n"
+            "Install it:\n"
             "  sudo apt install aria2\n"
-            "Downloads will be queued but cannot start.",
+            "Then restart QtAria.",
         )
     else:
-        log("aria2c ready")
+        log(f"aria2c failed: {result}")
+        QMessageBox.warning(
+            None, "QtAria",
+            "aria2c did not start.\n"
+            "Make sure aria2 is installed:\n"
+            "  sudo apt install aria2\n"
+            "Downloads will fail until aria2c is running.",
+        )
 
     _windows = set()
     _closing = False
@@ -74,7 +84,15 @@ def main():
 
     def _add_download(url):
         log(f"adding download: {url[:80]}")
-        gid = aria2.add_uri(url)
+        try:
+            gid = aria2.add_uri(url)
+        except Exception as e:
+            log(f"add_uri exception: {e}\n{traceback.format_exc()}")
+            QMessageBox.warning(
+                None, "QtAria",
+                f"Unexpected error:\n{e}",
+            )
+            return
         if gid is None:
             log("aria2c not responding")
             QMessageBox.warning(

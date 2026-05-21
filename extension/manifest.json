@@ -14,5 +14,6 @@
   "icons": {
     "16": "icon.png",
     "48": "icon.png"
-  }
+  },
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtdz0jfziJMFEXq28HJqys9WKlcG0kwo6VZRzU+yZu4js87oY7p1qtmqIViHBGHg5Oq5z8Ko5ZOthE59ENGj5uiJ/59dUUnhKnTrcP1X8IAxIFF4GTPa9ZxvskAE5YFtKw+V6foo1PnxUF8ZxczC4dUobHeaAIwuPOtcqE52sKFU5awEH0rg5qnrqG0FdK/Q0wVzXXQ7qH+fGkiFugiLHGkWpU9XR42ANDckg661AkSmhDiHLEqH870s+rCtuwqDFwos1+CmhfZi9i3Mit7WwmGMJYkCrVGMQwIlxj8mi1DthKiOilmodGs15i7S/MX/+Exj9D2L/sjrreYYs5yY4+QIDAQAB"
 }

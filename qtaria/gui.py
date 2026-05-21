@@ -5,6 +5,7 @@ from PyQt5.QtGui import QDesktopServices, QFont
 from PyQt5.QtWidgets import (
     QApplication,
     QDialog,
+    QFileDialog,
     QHBoxLayout,
     QLabel,
     QMessageBox,
@@ -55,17 +56,18 @@ def _fmt_eta(secs):
 
 
 class StartupDialog(QDialog):
-    def __init__(self, current=4, parent=None):
+    def __init__(self, current=4, download_dir="", parent=None):
         super().__init__(parent)
         self.setWindowTitle("QtAria Setup")
-        self.setFixedSize(420, 200)
+        self.setFixedSize(460, 280)
         self._value = current
+        self._download_dir = download_dir
         self._setup_ui()
         self._set_value(current)
 
     def _setup_ui(self):
         layout = QVBoxLayout()
-        layout.setSpacing(8)
+        layout.setSpacing(6)
 
         title = QLabel("Connection threads per download:")
         title.setStyleSheet("font-size: 13px;")
@@ -102,6 +104,23 @@ class StartupDialog(QDialog):
         self.lbl_hint.setStyleSheet("color: #888;")
         layout.addWidget(self.lbl_hint)
 
+        # Directory chooser
+        dir_layout = QHBoxLayout()
+        dir_layout.setContentsMargins(0, 8, 0, 0)
+        dir_label = QLabel("Download to:")
+        dir_label.setStyleSheet("font-size: 12px;")
+        dir_layout.addWidget(dir_label)
+
+        self.lbl_dir = QLabel(self._download_dir)
+        self.lbl_dir.setStyleSheet("color: #555;")
+        self.lbl_dir.setWordWrap(True)
+        dir_layout.addWidget(self.lbl_dir, 1)
+
+        browse_btn = QPushButton("Browse")
+        browse_btn.clicked.connect(self._browse_dir)
+        dir_layout.addWidget(browse_btn)
+        layout.addLayout(dir_layout)
+
         layout.addStretch()
 
         btn_layout = QHBoxLayout()
@@ -116,6 +135,14 @@ class StartupDialog(QDialog):
         layout.addLayout(btn_layout)
 
         self.setLayout(layout)
+
+    def _browse_dir(self):
+        path = QFileDialog.getExistingDirectory(
+            self, "Select Download Directory", self._download_dir
+        )
+        if path:
+            self._download_dir = path
+            self.lbl_dir.setText(path)
 
     def _set_value(self, v):
         idx = SNAP_VALUES.index(v) if v in SNAP_VALUES else 1
@@ -132,6 +159,9 @@ class StartupDialog(QDialog):
 
     def value(self):
         return self._value
+
+    def download_dir(self):
+        return self._download_dir
 
 
 class DownloadWindow(QWidget):
