@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "QtAria",
+  "version": "1.0",
+  "description": "Send downloads to QtAria",
+  "permissions": [
+    "contextMenus",
+    "nativeMessaging"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png"
+  },
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3LVDsBN1l18ReQvSAtZGD3UYF5r4pRw5CY1PucAJGbK2RQM8c0yZ4RCEtRiQOuX3VnvRgZI4op9+EPkr81Txhb1Gr5wnylT4IfKf/rl4ZHZnKsX7r9TkEGPdEbwlZmF6SxXdYcIXXFkrI0j5Gol+0WHwlvkO187winLxhMasTK7IEJUdlrniEps+6sAzHddvn3ee9i/O4WgkGMv7BMEwWtGKhiOeT6SSaGJhycsZPq5CzdGt5QcAahh+i8c6KyEPVhkFs65XeAHPWTGIpTyJ1SlKvrK1rBAzyWAGVLx1pdbuoggsmnCKb8MF/Y5p8CV/xyH8gprSc4cYwXiBn13d+QIDAQAB"
+}
