@@ -5,7 +5,8 @@ A lightweight Qt5 frontend for aria2 with Chrome right-click integration.
 ## Quick start
 
 ```bash
-sudo apt install -y aria2 openssl python3-pyqt5
+sudo apt install -y aria2 openssl
+pip install --break-system-packages PyQt5
 git clone https://github.com/lque36708-pixel/QtAria.git
 cd QtAria
 python3 -m qtaria install-chrome
@@ -31,5 +32,5 @@ Right-click a link in Chrome → the app launches automatically, shows a slider 
 
 - Python 3.8+
 - aria2 (`sudo apt install aria2`)
-- PyQt5 (`sudo apt install python3-pyqt5`)
+- PyQt5 (`pip install --break-system-packages PyQt5`)
 - openssl (for extension setup)
