@@ -4,6 +4,7 @@ import os
 CONFIG_DIR = os.path.expanduser("~/.config/qtaria")
 CONFIG_FILE = os.path.join(CONFIG_DIR, "config.json")
 ARIA2_DIR = os.path.expanduser("~/Downloads")
+OLD_ARIA2_DIR = os.path.expanduser("~/Downloads/QtAria")  # migrate from old default
 
 DEFAULT_CONFIG = {
     "connections": 4,
@@ -21,10 +22,16 @@ def ensure_dirs():
 
 def load():
     ensure_dirs()
+    cfg = dict(DEFAULT_CONFIG)
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE) as f:
-            return {**DEFAULT_CONFIG, **json.load(f)}
-    return dict(DEFAULT_CONFIG)
+            saved = json.load(f)
+        cfg = {**cfg, **saved}
+        # migrate old download dir
+        if cfg.get("download_dir") == OLD_ARIA2_DIR:
+            cfg["download_dir"] = ARIA2_DIR
+            save(cfg)
+    return cfg
 
 
 def save(cfg):

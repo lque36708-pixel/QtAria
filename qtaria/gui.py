@@ -318,7 +318,13 @@ class DownloadWindow(QWidget):
         self.close()
 
     def _open_folder(self):
-        QDesktopServices.openUrl(QUrl.fromLocalFile(self.download_dir))
+        path = os.path.abspath(self.download_dir)
+        url = QUrl.fromLocalFile(path)
+        if not QDesktopServices.openUrl(url):
+            try:
+                subprocess.Popen(["xdg-open", path])
+            except Exception:
+                QMessageBox.information(self, "Download Folder", path)
 
     def _do_add_url(self):
         if self._on_add_url:
