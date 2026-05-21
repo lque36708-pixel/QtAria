@@ -12,11 +12,20 @@ cd QtAria
 python3 -m qtaria install-chrome
 ```
 
-Then:
-1. Open `chrome://extensions`
-2. Enable **Developer mode**
-3. Click **Load unpacked** → select the `extension/` folder
-4. Right-click any link → **Download with QtAria**
+Then open your browser's extension page:
+
+| Browser | URL |
+|---------|-----|
+| Chrome | `chrome://extensions` |
+| Chromium | `chrome://extensions` |
+| Brave | `brave://extensions` |
+| Edge | `edge://extensions` |
+| Vivaldi | `vivaldi://extensions` |
+| Opera | `opera://extensions` |
+
+1. Enable **Developer mode**
+2. Click **Load unpacked** → select the `extension/` folder
+3. Right-click any link → **Download with QtAria**
 
 ## Usage
 
@@ -26,7 +35,7 @@ python3 -m qtaria install-chrome --list        # List detected browsers
 python3 -m qtaria install-chrome --browser chrome,brave  # Non-interactive
 ```
 
-Right-click a link in Chrome → the app launches automatically, shows a slider for connection threads (1/4/8/16), downloads the file in a progress window, and quits when closed.
+Right-click a link in your browser → the app launches automatically, shows a slider for connection threads (1/4/8/16), downloads the file in a progress window, and quits when closed.
 
 ## Requirements
 
