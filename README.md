@@ -3,7 +3,7 @@
 A lightweight Qt5 frontend for aria2 with Chrome right-click integration.
 
 ## Quick start
-
+Install QtAria easily by just copy - paste this code block into your terminal (linux only):
 ```bash
 sudo apt install -y aria2 openssl
 pip install --break-system-packages PyQt5
