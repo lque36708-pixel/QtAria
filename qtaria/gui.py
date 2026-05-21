@@ -181,7 +181,8 @@ class DownloadWindow(QWidget):
 
         self.setWindowTitle(f"QtAria — {self._filename}")
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowMaximizeButtonHint)
-        self.setFixedSize(420, 180)
+        self.setFixedWidth(420)
+        self.setMinimumHeight(180)
         self._setup_ui()
         self._update_info("Starting...", 0)
 
@@ -219,6 +220,7 @@ class DownloadWindow(QWidget):
         layout.addWidget(self.progress)
 
         self.lbl_info = QLabel()
+        self.lbl_info.setWordWrap(True)
         layout.addWidget(self.lbl_info)
 
         btn_layout = QHBoxLayout()
@@ -245,6 +247,11 @@ class DownloadWindow(QWidget):
             self.progress.setValue(pct)
             self.progress.setFormat(f"{pct}%")
         self.lbl_info.setText(text)
+        self.lbl_info.updateGeometry()
+        self.layout().activate()
+        needed = self.layout().heightForWidth(self.width())
+        if needed > self.height():
+            self.resize(self.width(), needed)
 
     def _poll(self):
         if self.completed:
