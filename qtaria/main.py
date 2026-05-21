@@ -53,17 +53,16 @@ def main():
     else:
         log("aria2c ready")
 
+    _windows = set()
     _closing = False
 
     def _on_window_closed(obj=None):
         nonlocal _closing
         if _closing:
             return
-        for w in app.topLevelWidgets():
-            if isinstance(w, DownloadWindow):
-                return
-        _closing = True
-        QTimer.singleShot(0, app.quit)
+        if not _windows:
+            _closing = True
+            QTimer.singleShot(0, app.quit)
 
     def open_add_url_dialog():
         url, ok = QInputDialog.getText(
@@ -96,9 +95,11 @@ def main():
         try:
             win = DownloadWindow(gid, url, aria2, conf["download_dir"])
             win.set_on_add_url(open_add_url_dialog)
+            _windows.add(win)
+            win.destroyed.connect(lambda obj=None, w=win: _windows.discard(w))
             win.destroyed.connect(_on_window_closed)
             win.show()
-            log("window shown")
+            log("window shown, references held")
         except Exception as e:
             log(f"window creation failed: {e}\n{traceback.format_exc()}")
 
