@@ -26,7 +26,7 @@ function sendToHost(url) {
   port.onMessage.addListener((msg) => {
     clearTimeout(timeout);
     if (msg.ok) {
-      notifyUser("QtAria", "Download sent to QtAria.");
+      // silent success
     } else {
       notifyUser("QtAria Error", msg.error || "Unknown error.", true);
     }
