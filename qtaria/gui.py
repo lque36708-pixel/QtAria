@@ -207,6 +207,10 @@ class DownloadWindow(QWidget):
         self.lbl_url.setStyleSheet("color: #555;")
         layout.addWidget(self.lbl_url)
 
+        self.lbl_path = QLabel(self.download_dir)
+        self.lbl_path.setStyleSheet("color: #888; font-size: 11px;")
+        layout.addWidget(self.lbl_path)
+
         self.progress = QProgressBar()
         self.progress.setTextVisible(True)
         self.progress.setFixedHeight(22)
