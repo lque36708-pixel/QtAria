@@ -50,6 +50,7 @@ class Server:
         self.thread = None
 
     def start(self):
+        _Handler.request_queue = self.queue
         self.thread = threading.Thread(
             target=run, args=(self.host, self.port, self.queue), daemon=True
         )

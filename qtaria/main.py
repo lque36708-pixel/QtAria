@@ -1,4 +1,5 @@
 import sys
+import traceback
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QApplication, QInputDialog, QLineEdit, QMessageBox
 
@@ -8,7 +9,13 @@ from .httpd import Server
 from .gui import StartupDialog, DownloadWindow
 
 
+def log(msg):
+    print(f"[QtAria] {msg}", file=sys.stderr, flush=True)
+
+
 def main():
+    log("starting")
+
     conf = cfg.load()
 
     app = QApplication(sys.argv)
@@ -19,6 +26,7 @@ def main():
     # while the user is still on the startup dialog
     httpd = Server(host="localhost", port=conf["http_port"])
     httpd.start()
+    log(f"HTTP server on :{conf['http_port']}")
 
     dialog = StartupDialog(conf["connections"])
     if dialog.exec() != StartupDialog.Accepted:
@@ -27,12 +35,14 @@ def main():
     connections = dialog.value()
     conf["connections"] = connections
     cfg.save(conf)
+    log(f"connections={connections}")
 
     aria2 = Aria2c(port=conf["rpc_port"], secret=conf["rpc_secret"])
     ok = aria2.start_daemon(
         connections=connections, download_dir=conf["download_dir"]
     )
     if not ok:
+        log("aria2c not responding")
         QMessageBox.warning(
             None, "QtAria",
             "aria2c did not start or is not responding.\n"
@@ -40,6 +50,8 @@ def main():
             "  sudo apt install aria2\n"
             "Downloads will be queued but cannot start.",
         )
+    else:
+        log("aria2c ready")
 
     _closing = False
 
@@ -62,8 +74,10 @@ def main():
             _add_download(url.strip())
 
     def _add_download(url):
+        log(f"adding download: {url[:80]}")
         gid = aria2.add_uri(url)
         if gid is None:
+            log("aria2c not responding")
             QMessageBox.warning(
                 None, "QtAria",
                 "Cannot connect to aria2c.\n"
@@ -72,15 +86,21 @@ def main():
             )
             return
         if isinstance(gid, dict) and "_error" in gid:
+            log(f"aria2 error: {gid['_error']}")
             QMessageBox.warning(
                 None, "QtAria",
                 f"Failed to add download:\n{gid['_error']}",
             )
             return
-        win = DownloadWindow(gid, url, aria2, conf["download_dir"])
-        win.set_on_add_url(open_add_url_dialog)
-        win.destroyed.connect(_on_window_closed)
-        win.show()
+        log(f"got gid={gid}, creating window")
+        try:
+            win = DownloadWindow(gid, url, aria2, conf["download_dir"])
+            win.set_on_add_url(open_add_url_dialog)
+            win.destroyed.connect(_on_window_closed)
+            win.show()
+            log("window shown")
+        except Exception as e:
+            log(f"window creation failed: {e}\n{traceback.format_exc()}")
 
     def poll_queue():
         while True:
@@ -90,8 +110,9 @@ def main():
             url, _ = item
             _add_download(url)
 
-    # Process URLs that arrived while dialog was showing
-    poll_queue()
+    # Schedule queue processing after event loop starts
+    # (calling poll_queue directly before app.exec() can prevent windows from appearing)
+    QTimer.singleShot(0, poll_queue)
 
     timer = QTimer()
     timer.timeout.connect(poll_queue)
