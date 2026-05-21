@@ -1,6 +1,6 @@
 import os
 import subprocess
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtCore import Qt, QTimer, QUrl
 from PyQt5.QtGui import QDesktopServices, QFont
 from PyQt5.QtWidgets import (
     QApplication,
@@ -174,6 +174,7 @@ class DownloadWindow(QWidget):
         self.paused = False
         self.completed = False
         self._explicit_close = False
+        self._poll_count = 0
         self._filename = url.split("/")[-1] or "unknown"
         self._on_add_url = None
 
@@ -244,6 +245,7 @@ class DownloadWindow(QWidget):
             self.timer.stop()
             return
 
+        self._poll_count += 1
         s = self.aria2.tell_status(self.gid)
         if s is None:
             self._update_info("Connecting...")
@@ -269,7 +271,10 @@ class DownloadWindow(QWidget):
 
         if state == "complete":
             self.completed = True
-            self._update_info(f"Completed  —  {size_str}", 100)
+            if self._poll_count == 1 and total > 0 and completed == total:
+                self._update_info(f"Already exists  —  {size_str}", 100)
+            else:
+                self._update_info(f"Completed  —  {size_str}", 100)
             self.progress.setStyleSheet("QProgressBar::chunk { background: #4caf50; }")
             self.btn_pause.setEnabled(False)
             self.btn_cancel.setText("Close")
@@ -309,9 +314,7 @@ class DownloadWindow(QWidget):
         self.close()
 
     def _open_folder(self):
-        QDesktopServices.openUrl(
-            "file:///" + os.path.abspath(self.download_dir)
-        )
+        QDesktopServices.openUrl(QUrl.fromLocalFile(self.download_dir))
 
     def _do_add_url(self):
         if self._on_add_url:

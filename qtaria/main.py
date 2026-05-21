@@ -1,3 +1,4 @@
+import os
 import sys
 import traceback
 from PyQt5.QtCore import QTimer
@@ -23,24 +24,26 @@ def main():
     app.setApplicationName("QtAria")
 
     # Start HTTP server FIRST so host.py can connect and queue URLs
-    # while the user is still on the startup dialog
+    # while the startup dialog is showing (or immediately on subsequent runs)
     httpd = Server(host="localhost", port=conf["http_port"])
     httpd.start()
     log(f"HTTP server on :{conf['http_port']}")
 
-    dialog = StartupDialog(conf["connections"], conf["download_dir"])
-    if dialog.exec() != StartupDialog.Accepted:
-        return
-
-    connections = dialog.value()
-    conf["connections"] = connections
-    conf["download_dir"] = dialog.download_dir()
-    cfg.save(conf)
-    log(f"connections={connections}, dir={conf['download_dir']}")
+    first_run = not os.path.exists(cfg.CONFIG_FILE)
+    if first_run:
+        dialog = StartupDialog(conf["connections"], conf["download_dir"])
+        if dialog.exec() != StartupDialog.Accepted:
+            return
+        conf["connections"] = dialog.value()
+        conf["download_dir"] = dialog.download_dir()
+        cfg.save(conf)
+        log(f"first run: connections={conf['connections']}, dir={conf['download_dir']}")
+    else:
+        log(f"using saved config: connections={conf['connections']}, dir={conf['download_dir']}")
 
     aria2 = Aria2c(port=conf["rpc_port"], secret=conf["rpc_secret"])
     result = aria2.start_daemon(
-        connections=connections, download_dir=conf["download_dir"]
+        connections=conf["connections"], download_dir=conf["download_dir"]
     )
     if result is True:
         log("aria2c ready")
