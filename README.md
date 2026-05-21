@@ -1,6 +1,7 @@
 # QtAria
 
 A lightweight Qt5 frontend for aria2 with Chrome right-click integration.
+Use this if you don't need many of features, just download FAST & EASILY.
 
 ## Quick start
 Install QtAria easily by just copy - paste this code block into your terminal (linux only):
