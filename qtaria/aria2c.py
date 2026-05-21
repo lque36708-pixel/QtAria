@@ -108,6 +108,8 @@ class Aria2c:
             f"--rpc-listen-port={self.port}",
             f"--rpc-secret={self.secret}",
             "--continue=true",
+            "--max-tries=5",
+            "--retry-wait=5",
             f"--dir={download_dir or os.path.expanduser('~/Downloads')}",
             f"--split={connections}",
             f"--max-connection-per-server={connections}",
