@@ -79,7 +79,7 @@ class Aria2c:
             f"--rpc-listen-port={self.port}",
             f"--rpc-secret={self.secret}",
             "--continue=true",
-            f"--dir={download_dir or os.path.expanduser('~/Downloads/QtAria')}",
+            f"--dir={download_dir or os.path.expanduser('~/Downloads')}",
             f"--split={connections}",
             f"--max-connection-per-server={connections}",
             "--console-log-level=error",

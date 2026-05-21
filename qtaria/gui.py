@@ -167,6 +167,7 @@ class StartupDialog(QDialog):
 class DownloadWindow(QWidget):
     def __init__(self, gid, url, aria2: Aria2c, download_dir: str):
         super().__init__()
+        self.setAttribute(Qt.WA_DeleteOnClose)
         self.gid = gid
         self.url = url
         self.aria2 = aria2
