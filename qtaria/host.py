@@ -73,23 +73,29 @@ def main():
         _write_msg({"ok": False, "error": "No URL provided"})
         return
 
-    launched = False
     if not _is_running():
         _launch_qtaria()
-        launched = True
         for _ in range(30):
             time.sleep(0.5)
             if _is_running():
                 break
         else:
-            _write_msg({"ok": False, "error": "QtAria did not start"})
+            _write_msg({
+                "ok": False,
+                "error": "QtAria did not start. "
+                         "Run 'python3 -m qtaria' manually to see errors.",
+            })
             return
 
     try:
         _send_url(url)
         _write_msg({"ok": True})
+    except urllib.error.HTTPError as e:
+        _write_msg({"ok": False, "error": f"QtAria rejected the URL (HTTP {e.code})"})
+    except urllib.error.URLError as e:
+        _write_msg({"ok": False, "error": f"Cannot reach QtAria: {e.reason}"})
     except Exception as e:
-        _write_msg({"ok": False, "error": str(e)})
+        _write_msg({"ok": False, "error": f"Unexpected error: {e}"})
 
 
 if __name__ == "__main__":

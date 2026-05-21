@@ -1,30 +1,45 @@
 const HOST_NAME = "com.qtaria";
-let port = null;
+
+function notifyUser(title, message, isError = false) {
+  chrome.notifications.create({
+    type: "basic",
+    iconUrl: "icon.png",
+    title: title,
+    message: message,
+  });
+}
 
 function sendToHost(url) {
-  if (port) {
-    try {
-      port.postMessage({ url: url });
-      return;
-    } catch (e) {
-      port = null;
-    }
+  let port;
+  try {
+    port = chrome.runtime.connectNative(HOST_NAME);
+  } catch (e) {
+    notifyUser("QtAria Error", "Could not connect to QtAria. Run 'python3 -m qtaria install-chrome' first.", true);
+    return;
   }
 
-  port = chrome.runtime.connectNative(HOST_NAME);
+  const timeout = setTimeout(() => {
+    notifyUser("QtAria Timeout", "QtAria did not respond. Is it installed correctly?", true);
+    try { port.disconnect(); } catch (_) {}
+  }, 20000);
+
   port.onMessage.addListener((msg) => {
-    if (!msg.ok) {
-      console.error("QtAria host error:", msg.error);
+    clearTimeout(timeout);
+    if (msg.ok) {
+      notifyUser("QtAria", "Download sent to QtAria.");
+    } else {
+      notifyUser("QtAria Error", msg.error || "Unknown error.", true);
     }
-    port.disconnect();
-    port = null;
+    try { port.disconnect(); } catch (_) {}
   });
+
   port.onDisconnect.addListener(() => {
+    clearTimeout(timeout);
     if (chrome.runtime.lastError) {
-      console.error("QtAria host disconnected:", chrome.runtime.lastError.message);
+      notifyUser("QtAria Error", chrome.runtime.lastError.message, true);
     }
-    port = null;
   });
+
   port.postMessage({ url: url });
 }
 
@@ -36,7 +51,7 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
-chrome.contextMenus.onClicked.addListener((info, tab) => {
+chrome.contextMenus.onClicked.addListener((info) => {
   const url = info.linkUrl || info.srcUrl;
   if (url) {
     sendToHost(url);

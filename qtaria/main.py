@@ -15,6 +15,11 @@ def main():
     app.setQuitOnLastWindowClosed(False)
     app.setApplicationName("QtAria")
 
+    # Start HTTP server FIRST so host.py can connect and queue URLs
+    # while the user is still on the startup dialog
+    httpd = Server(host="localhost", port=conf["http_port"])
+    httpd.start()
+
     dialog = StartupDialog(conf["connections"])
     if dialog.exec() != StartupDialog.Accepted:
         return
@@ -28,11 +33,13 @@ def main():
         connections=connections, download_dir=conf["download_dir"]
     )
     if not ok:
-        QMessageBox.warning(None, "QtAria", "Could not connect to aria2c.\n"
-                             "Make sure aria2 is installed.")
-
-    httpd = Server(host="localhost", port=conf["http_port"])
-    httpd.start()
+        QMessageBox.warning(
+            None, "QtAria",
+            "aria2c did not start or is not responding.\n"
+            "Make sure aria2 is installed:\n"
+            "  sudo apt install aria2\n"
+            "Downloads will be queued but cannot start.",
+        )
 
     _closing = False
 
@@ -57,11 +64,18 @@ def main():
     def _add_download(url):
         gid = aria2.add_uri(url)
         if gid is None:
-            QMessageBox.warning(None, "QtAria",
-                                "aria2c is not responding.")
+            QMessageBox.warning(
+                None, "QtAria",
+                "Cannot connect to aria2c.\n"
+                "Make sure aria2 is running:\n"
+                "  sudo apt install aria2",
+            )
             return
         if isinstance(gid, dict) and "_error" in gid:
-            QMessageBox.warning(None, "QtAria", gid["_error"])
+            QMessageBox.warning(
+                None, "QtAria",
+                f"Failed to add download:\n{gid['_error']}",
+            )
             return
         win = DownloadWindow(gid, url, aria2, conf["download_dir"])
         win.set_on_add_url(open_add_url_dialog)
@@ -69,15 +83,19 @@ def main():
         win.show()
 
     def poll_queue():
-        item = httpd.get_url()
-        if item:
+        while True:
+            item = httpd.get_url()
+            if not item:
+                break
             url, _ = item
             _add_download(url)
+
+    # Process URLs that arrived while dialog was showing
+    poll_queue()
 
     timer = QTimer()
     timer.timeout.connect(poll_queue)
     timer.start(500)
 
     app.aboutToQuit.connect(aria2.stop_daemon)
-
     sys.exit(app.exec())
