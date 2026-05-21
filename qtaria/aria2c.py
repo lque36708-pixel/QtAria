@@ -10,6 +10,35 @@ RPC_PORT = 6800
 RPC_SECRET = "qtaria"
 
 
+def translate_error(msg):
+    msg_lower = msg.lower()
+    codes_400 = {"403": "Server refused the request. The server may not support multi-threading or blocks it.",
+                 "401": "Authentication required.",
+                 "407": "Authentication required.",
+                 "404": "File not found on server.",
+                 "410": "File not found on server.",
+                 "416": "Server does not support multi-thread (range request rejected).",
+                 "429": "Too many requests. Try again later."}
+    for code, text in codes_400.items():
+        if code in msg:
+            return text
+    if any(c in msg for c in ["500", "502", "503", "504"]):
+        return "Server temporarily unavailable. Try again later."
+    if "timeout" in msg_lower or "timed out" in msg_lower:
+        return "Connection timed out."
+    if "resolve" in msg_lower or "dns" in msg_lower or "name" in msg_lower:
+        return "Could not resolve server address. Check your internet connection."
+    if "connection refused" in msg_lower:
+        return "Connection refused. The server may be down."
+    if "disk" in msg_lower or "no space" in msg_lower or "quota" in msg_lower:
+        return "Not enough disk space. Free up some space and try again."
+    if "curl" in msg_lower and "http" in msg_lower:
+        return "HTTP transfer error. The download may have been interrupted."
+    if "could not parse" in msg_lower:
+        return "Invalid response from server. Try a different URL."
+    return f"Download failed: {msg}"
+
+
 class Aria2c:
     def __init__(self, port=RPC_PORT, secret=RPC_SECRET):
         self.base = f"http://localhost:{port}/jsonrpc"

@@ -18,7 +18,7 @@ from PyQt5.QtWidgets import (
     QLineEdit,
 )
 
-from .aria2c import Aria2c
+from .aria2c import Aria2c, translate_error
 
 CONNECTION_PRESETS = {
     1: ("Normal", "1 thread, basic download"),
@@ -256,7 +256,7 @@ class DownloadWindow(QWidget):
             self._update_info("Connecting...")
             return
         if isinstance(s, dict) and "_error" in s:
-            self._update_info(f"Error: {s['_error']}")
+            self._update_info(translate_error(s['_error']))
             return
 
         total = int(s.get("totalLength", 0))
@@ -289,7 +289,7 @@ class DownloadWindow(QWidget):
             self.timer.stop()
         elif state == "error":
             err = s.get("errorMessage", "Unknown error")
-            self._update_info(f"Error: {err}", pct)
+            self._update_info(translate_error(err), pct)
         elif state == "paused":
             self.paused = True
             self.btn_pause.setText("Resume")

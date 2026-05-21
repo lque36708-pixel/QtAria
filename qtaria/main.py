@@ -4,7 +4,7 @@ from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QApplication, QInputDialog, QLineEdit, QMessageBox
 
 from . import config as cfg
-from .aria2c import Aria2c
+from .aria2c import Aria2c, translate_error
 from .httpd import Server
 from .gui import StartupDialog, DownloadWindow
 
@@ -104,7 +104,7 @@ def main():
             log(f"aria2 error: {gid['_error']}")
             QMessageBox.warning(
                 None, "QtAria",
-                f"Failed to add download:\n{gid['_error']}",
+                translate_error(gid['_error']),
             )
             return
         log(f"got gid={gid}, creating window")
